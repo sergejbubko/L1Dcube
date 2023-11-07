@@ -77,9 +77,6 @@ BearSSL::CertStore certStore;
 #define GREEN_LED D5
 #define RED_LED D6
 
-// Buzzer
-#define BUZZER_PIN D7
-
 // Display power
 #define DISPLAY_POWER_PIN D8
 
@@ -118,8 +115,7 @@ struct Holding {
 
 struct Settings {
   float LEDtickThresh; // LED threshold for two prices in a row (ticker) in percent
-  float buzzTickThresh; // buzzer threshold for two prices in a row (ticker) in percent
-  float buzzCPThresh; // buzzer threshold for difference between checkpoint price and current price in percent
+  float CPThresh; // threshold for difference between checkpoint price and current price in percent
 // We'll request a new value just before we change the screen so it's the most up to date
 // Rate Limits: https://docs.cloud.coinbase.com/exchange/docs/rate-limits
 // We throttle public endpoints by IP: 10 requests per second, up to 15 requests per second in bursts. Some endpoints may have custom rate limits.
@@ -160,10 +156,8 @@ void loadSettings(const char *filename, Settings &settings) {
   if (!file) {
     Serial.println(F("ERR: Failed to read file, using default values"));
     settings.LEDtickThresh = 0.01;
-    // threshold for difference of last two loaded prices in a row in percent
-    settings.buzzTickThresh = 0.01; 
     // threshold for daily price change in percent
-    settings.buzzCPThresh = 5.0;
+    settings.CPThresh = 5.0;
     // time in milis to reload new prices and/or another pair from list
     settings.screenChangeDelay = 5000;  
     // list of cryptocurrencies to choose from
@@ -190,10 +184,8 @@ void loadSettings(const char *filename, Settings &settings) {
   // Copy values from the JsonDocument to the Config
   // threshold for difference of last two loaded prices in a row in percent
   settings.LEDtickThresh = doc["LEDtickThresh"] | 0.01;
-  // threshold for difference of last two loaded prices in a row in percent
-  settings.buzzTickThresh = doc["buzzTickThresh"] | 0.01; 
   // threshold for daily price change in percent
-  settings.buzzCPThresh = doc["buzzCPThresh"] | 5.0;
+  settings.CPThresh = doc["CPThresh"] | 5.0;
   // time in milis to reload new prices and/or another pair from list
   settings.screenChangeDelay = doc["screenChangeDelay"] | 5000;  
   // list of cryptocurrencies to choose from
@@ -225,8 +217,7 @@ void saveSettings(const char *filename, const Settings &settings) {
   
   // Set the values in the document 
   doc["LEDtickThresh"] = settings.LEDtickThresh;
-  doc["buzzTickThresh"] = settings.buzzTickThresh;
-  doc["buzzCPThresh"] = settings.buzzCPThresh;
+  doc["CPThresh"] = settings.CPThresh;
   doc["screenChangeDelay"] = settings.screenChangeDelay;  
   for (int i = 0; i < MAX_HOLDINGS; i++) {
     doc["pair" + String(i)] = settings.pairs[i];
@@ -315,11 +306,8 @@ String processor(const String& var){
   if(var == "INPUT_LED_TICK_THRESH"){
     return String(settings.LEDtickThresh);
   }
-  if(var == "INPUT_BUZZ_TICK_THRESH"){
-    return String(settings.buzzTickThresh);
-  }
-  if(var == "INPUT_BUZZ_CP_THRESH"){
-    return String(settings.buzzCPThresh);
+  if(var == "INPUT_CP_THRESH"){
+    return String(settings.CPThresh);
   }
   if(var == "SCREEN_CHANGE_DELAY" + String(settings.screenChangeDelay)){
      return "selected";
@@ -426,7 +414,6 @@ void setup() {
   while (!Serial) continue;
   pinMode(RED_LED, OUTPUT);
   pinMode(GREEN_LED, OUTPUT);
-  pinMode(BUZZER_PIN, OUTPUT);
 
   // Initialising the display
   display.init();
@@ -538,10 +525,8 @@ void setup() {
       AsyncWebParameter* p = request->getParam(i);
       if (p->name() == "inputLEDtickThresh") {
         settings.LEDtickThresh = p->value().toFloat();
-      } else if (p->name() == "inputBuzzTickThresh") {
-        settings.buzzTickThresh = p->value().toFloat();
-      } else if (p->name() == "inputBuzzCPThresh") {
-        settings.buzzCPThresh = p->value().toFloat();
+      } else if (p->name() == "inputCPThresh") {
+        settings.CPThresh = p->value().toFloat();
       } else if (p->name() == "inputScreenChangeDelay") {
         settings.screenChangeDelay = (long)p->value().toInt();
       } else if (p->name() == "inputCurrencyPairs") {
@@ -668,16 +653,10 @@ void displayHolding(int index) {
   }
   else if (holdings[index].newPrice > (holdings[index].oldPrice * (1.0 + settings.LEDtickThresh / 100.0)) && holdings[index].oldPrice != 0) {
     LEDup();
-  }
-  if (holdings[index].newPrice < (holdings[index].oldPrice * (1.0 - settings.buzzTickThresh / 100.0))) {
-    buzzerDown();
-  }
-  else if (holdings[index].newPrice > (holdings[index].oldPrice * (1.0 + settings.buzzTickThresh / 100.0)) && holdings[index].oldPrice != 0) {
-    buzzerUp();
-  }  
+  } 
   float priceTrend = isCPThreshReached(index);
   if (priceTrend != 0.0) {
-    buzzer(priceTrend, index);
+    alarm(priceTrend, index);
   }
 }
 
@@ -694,8 +673,7 @@ void LEDup(){
   digitalWrite(GREEN_LED, LOW); 
 }
 
-void buzzer(float priceTrend, int index){    
-  // Sound buzzer DI-DI-DI-DI-DI
+void alarm(float priceTrend, int index){    
   display.clear();
   display.setTextAlignment(TEXT_ALIGN_CENTER);
   display.setFont(ArialMT_Plain_24);
@@ -708,40 +686,20 @@ void buzzer(float priceTrend, int index){
   display.drawString(64, 32, String(priceChange) + "%");
   display.display();
   for (int i = 0; i < 5; i++) {
-    digitalWrite(RED_LED,HIGH) ;
-    digitalWrite(GREEN_LED,HIGH) ;
-    digitalWrite(BUZZER_PIN,HIGH) ;
+    digitalWrite(RED_LED,HIGH);
+    digitalWrite(GREEN_LED,HIGH);
     delay (50); 
     digitalWrite(RED_LED,LOW) ;
     digitalWrite(GREEN_LED,LOW) ;
-    digitalWrite(BUZZER_PIN,LOW) ;
     delay (75); 
   }    
   delay(7500);
 }
 
-void buzzerUp(){
-  // Sound buzzer DI-DI
-  digitalWrite(BUZZER_PIN,HIGH) ;//Turn on active buzzer
-  delay (25); 
-  digitalWrite(BUZZER_PIN,LOW) ; //Turn off active buzzer
-  delay (25); 
-  digitalWrite(BUZZER_PIN,HIGH) ; //Turn on active buzzer
-  delay (50); 
-  digitalWrite(BUZZER_PIN,LOW) ; //Turn off active buzzer
-}
-
-void buzzerDown(){
-  // Sound buzzer DI
-  digitalWrite(BUZZER_PIN,HIGH) ; //Turn on active buzzer
-  delay (25); 
-  digitalWrite(BUZZER_PIN,LOW) ; //Turn off active buzzer
-}
-
 float isCPThreshReached (int index) {  
   float result = 0.0;
-  if ((holdings[index].priceCheckpoint * (1.0 + settings.buzzCPThresh / 100) < holdings[index].newPrice) || 
-     (holdings[index].priceCheckpoint * (1.0 - settings.buzzCPThresh / 100) > holdings[index].newPrice)) {
+  if ((holdings[index].priceCheckpoint * (1.0 + settings.CPThresh / 100) < holdings[index].newPrice) || 
+     (holdings[index].priceCheckpoint * (1.0 - settings.CPThresh / 100) > holdings[index].newPrice)) {
     result = holdings[index].priceCheckpoint == 0.0 ? 0.0 : (holdings[index].newPrice / holdings[index].priceCheckpoint - 1.0) * 100.0;
     holdings[index].priceCheckpoint = holdings[index].newPrice;
     saveCheckpointPrice("/" + holdings[index].tickerId + ".txt", holdings[index].newPrice);

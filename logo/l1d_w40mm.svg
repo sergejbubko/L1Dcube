@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   version="1.0"
+   width="40pt"
+   height="21.5pt"
+   viewBox="0 0 40 21.5"
+   preserveAspectRatio="xMidYMid meet"
+   id="svg32"
+   sodipodi:docname="l1d_w=40mm.svg"
+   inkscape:version="1.1 (c68e22c387, 2021-05-23)"
+   inkscape:export-filename="C:\Users\Ryzen\Downloads\l1d.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs36" />
+  <sodipodi:namedview
+     id="namedview34"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="pt"
+     showgrid="false"
+     inkscape:zoom="10.46518"
+     inkscape:cx="25.513177"
+     inkscape:cy="10.272159"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg32"
+     showguides="true"
+     inkscape:guide-bbox="true" />
+  <g
+     transform="matrix(0.03411662,0,0,-0.03411662,-9.0886588,46.963134)"
+     fill="#000000"
+     stroke="none"
+     id="g30">
+    <g
+       aria-label="L1"
+       transform="scale(1,-1)"
+       id="text11886"
+       style="font-size:300px;line-height:1.25;letter-spacing:-63.75px;word-spacing:0px;fill:#000000;stroke-width:7.5">
+      <path
+         d="m 273.75686,-754 v -616 h 126.72 v 493.68 h 296.12 V -754 Z"
+         style="font-size:880px;font-family:Overpass;-inkscape-font-specification:'Overpass, @wght=800';font-variation-settings:'wght' 800;fill:#000000"
+         id="path59636" />
+      <path
+         d="M 754.72037,-754.00002 V -1203.68 h -98.91505 v -86.0572 c 19.36,0 41.9382,-7.1989 61.11005,-15.8827 13.8735,-6.2839 27.196,-14.7325 37.805,-25.6601 10.6563,-10.9765 19.0666,-22.2933 24.64,-38.72 h 102.0799 v 615.99998 z"
+         style="font-size:880px;font-family:Overpass;-inkscape-font-specification:'Overpass, @wght=800';font-variation-settings:'wght' 800;fill:#000000"
+         id="path59638"
+         sodipodi:nodetypes="ccccaacccc" />
+    </g>
+    <g
+       aria-label="D"
+       transform="matrix(1,0,0,-1,-56.274205,0.01068409)"
+       id="text45500"
+       style="font-size:880px;line-height:1.25;font-family:Overpass;-inkscape-font-specification:'Overpass, @wght=700';font-variation-settings:'wght' 700;fill:#000000;stroke-width:7.5">
+      <path
+         d="m 1000,-754 v -616 h 207.68 q 80.08,0 136.4,26.4 56.32,25.96 91.08,70.4 35.2,44 51.04,99 16.28,54.56 16.28,112.2 0,52.8 -15.4,106.92 -14.96,54.12 -49.28,99.88 -34.32,45.32 -91.96,73.48 -57.2,27.72 -141.68,27.72 z m 113.96,-108.24 h 102.08 q 47.08,0 79.2,-17.6 32.12,-18.04 51.48,-47.08 19.8,-29.48 28.6,-64.68 9.24,-35.64 9.24,-70.4 0,-36.96 -9.24,-72.6 -9.24,-35.64 -28.6,-64.68 -19.36,-29.04 -49.28,-46.2 -29.92,-17.16 -71.72,-17.16 h -111.76 z"
+         id="path59660"
+         style="fill:#000000" />
+    </g>
+  </g>
+</svg>
