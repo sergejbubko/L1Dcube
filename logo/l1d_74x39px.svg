@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
    version="1.0"
-   width="40mm"
-   height="21.5mm"
-   viewBox="0 0 113.38583 60.944881"
+   width="74"
+   height="39"
+   viewBox="0 0 55.500002 29.25"
    preserveAspectRatio="xMidYMid"
    id="svg32"
-   sodipodi:docname="l1d_w40mm.svg"
+   sodipodi:docname="l1d_74x39px.svg"
    inkscape:version="1.3 (0e150ed6c4, 2023-07-21)"
    inkscape:export-filename="C:\Users\Ryzen\Downloads\l1d.png"
    inkscape:export-xdpi="96"
@@ -25,7 +25,7 @@
      inkscape:pageshadow="2"
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
-     inkscape:document-units="pt"
+     inkscape:document-units="px"
      showgrid="false"
      inkscape:zoom="5.23259"
      inkscape:cx="62.301843"
@@ -41,7 +41,7 @@
      inkscape:showpageshadow="2"
      inkscape:deskcolor="#d1d1d1" />
   <g
-     transform="matrix(0.09670854,0,0,-0.09670854,-26.474626,132.49173)"
+     transform="matrix(0.04733682,0,0,-0.04733682,-12.958778,64.851941)"
      fill="#000000"
      stroke="none"
      id="g30">

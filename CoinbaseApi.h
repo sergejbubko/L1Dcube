@@ -35,8 +35,6 @@ struct CBPStatsResponse{
   float open;
   float high;
   float low;
-  float volume_24h;
-  float volume_30day;
   String error;
 };
 

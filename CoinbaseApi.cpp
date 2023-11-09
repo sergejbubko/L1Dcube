@@ -133,8 +133,6 @@ CBPStatsResponse CoinbaseApi::GetStatsInfo(String tickerId) {
   responseStatsObject.open = stats["open"].as<float>();
   responseStatsObject.high = stats["high"].as<float>();
   responseStatsObject.low = stats["low"].as<float>();
-  responseStatsObject.volume_24h = stats["volume"].as<float>();
-  responseStatsObject.volume_30day = stats["volume_30day"].as<float>();
   responseStatsObject.error = "";
  
   return responseStatsObject;

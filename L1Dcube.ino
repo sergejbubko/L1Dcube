@@ -66,6 +66,7 @@ BearSSL::CertStore certStore;
 #define GHOTA_BIN_FILE "L1Dcube.ino.d1_mini.bin"
 #define GHOTA_ACCEPT_PRERELEASE 0
 
+//https://github.com/yknivag/ESP_OTA_GitHub
 #include <ESP_OTA_GitHub.h>
 
 // Pins based on your wiring
@@ -375,7 +376,7 @@ void updateFirmware(){
   //We do this locally so that the memory used is freed when the function exists.
   ESPOTAGitHub ESPOTAGitHub(&certStore, GHOTA_USER, GHOTA_REPO, VERSION, GHOTA_BIN_FILE, GHOTA_ACCEPT_PRERELEASE, 4096);
   display.clear();
-  display.drawXbm(27, 5, MAINLOGO_WIDTH, MAINLOGO_HEIGHT, mainLogo);
+  display.drawXbm(27, 10, MAINLOGO_WIDTH, MAINLOGO_HEIGHT, mainLogo);
   display.setTextAlignment(TEXT_ALIGN_CENTER);
   display.setFont(ArialMT_Plain_10);
   display.drawString(64, 54, F("Checking for update..."));
@@ -385,7 +386,7 @@ void updateFirmware(){
       Serial.print("Upgrade found at: ");
       Serial.println(ESPOTAGitHub.getUpgradeURL());
       display.clear();
-      display.drawXbm(27, 5, MAINLOGO_WIDTH, MAINLOGO_HEIGHT, mainLogo);
+      display.drawXbm(27, 10, MAINLOGO_WIDTH, MAINLOGO_HEIGHT, mainLogo);
       display.setTextAlignment(TEXT_ALIGN_CENTER);
       display.setFont(ArialMT_Plain_10);
       display.drawString(64, 54, F("Updating"));
@@ -398,7 +399,7 @@ void updateFirmware(){
       }
     } else {
       display.clear();
-      display.drawXbm(27, 5, MAINLOGO_WIDTH, MAINLOGO_HEIGHT, mainLogo);
+      display.drawXbm(27, 10, MAINLOGO_WIDTH, MAINLOGO_HEIGHT, mainLogo);
       display.setTextAlignment(TEXT_ALIGN_CENTER);
       display.setFont(ArialMT_Plain_10);
       display.drawString(64, 54, F("No updates"));
@@ -421,7 +422,7 @@ void setup() {
   display.setTextAlignment(TEXT_ALIGN_CENTER);
 
   display.clear();
-  display.drawXbm(27, 5, MAINLOGO_WIDTH, MAINLOGO_HEIGHT, mainLogo);
+  display.drawXbm(27, 10, MAINLOGO_WIDTH, MAINLOGO_HEIGHT, mainLogo);
   display.setTextAlignment(TEXT_ALIGN_RIGHT);
   display.setFont(ArialMT_Plain_10);
   display.drawString(128, 54, VERSION);
@@ -731,18 +732,6 @@ String formatCurrency(float price) {
   }
   formattedCurrency.concat(String(price, pointsAfterDecimal));
   return formattedCurrency;
-}
-
-String formatVolume(float volume) {
-  if (volume <= 999.9) {
-    return String(volume, 1);
-  } else if (volume > 999.9 and volume <= 999999.9) {
-    return String(volume/1000.0, 1) + "k";
-  } else if (volume > 999999.9 and volume <= 999999999.9) {
-    return String(volume/1000000.0, 1) + "M";
-  } else { //if (volume > 999999999.9) {
-    return String(volume/1000000000.0, 1) + "G";
-  }
 }
 
 void updateDate(void) {

@@ -1,7 +1,6 @@
 {
   "LEDtickThresh": 0.01,
-  "buzzTickThresh": 0.01,
-  "buzzCPThresh": 5,
+  "CPThresh": 5,
   "screenChangeDelay" : 5000,
   "pair0" : "BTC-USD",
   "pair1" : "null",  
