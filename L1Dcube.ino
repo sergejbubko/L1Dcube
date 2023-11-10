@@ -379,7 +379,7 @@ void updateFirmware(){
   display.drawXbm(27, 10, MAINLOGO_WIDTH, MAINLOGO_HEIGHT, mainLogo);
   display.setTextAlignment(TEXT_ALIGN_CENTER);
   display.setFont(ArialMT_Plain_10);
-  display.drawString(64, 54, F("Checking for update..."));
+  display.drawString(64, 50, F("Checking for update..."));
   display.display();
   Serial.println("Checking for update...");
     if (ESPOTAGitHub.checkUpgrade()) {
@@ -389,7 +389,7 @@ void updateFirmware(){
       display.drawXbm(27, 10, MAINLOGO_WIDTH, MAINLOGO_HEIGHT, mainLogo);
       display.setTextAlignment(TEXT_ALIGN_CENTER);
       display.setFont(ArialMT_Plain_10);
-      display.drawString(64, 54, F("Updating"));
+      display.drawString(64, 50, F("Updating"));
       display.display();
       if (ESPOTAGitHub.doUpgrade()) {
         Serial.println("Upgrade complete."); //This should never be seen as the device should restart on successful upgrade.
@@ -402,7 +402,7 @@ void updateFirmware(){
       display.drawXbm(27, 10, MAINLOGO_WIDTH, MAINLOGO_HEIGHT, mainLogo);
       display.setTextAlignment(TEXT_ALIGN_CENTER);
       display.setFont(ArialMT_Plain_10);
-      display.drawString(64, 54, F("No updates"));
+      display.drawString(64, 50, F("No updates"));
       display.display();
       Serial.print("Not proceeding to upgrade: ");
       Serial.println(ESPOTAGitHub.getLastError());
@@ -425,7 +425,7 @@ void setup() {
   display.drawXbm(27, 10, MAINLOGO_WIDTH, MAINLOGO_HEIGHT, mainLogo);
   display.setTextAlignment(TEXT_ALIGN_RIGHT);
   display.setFont(ArialMT_Plain_10);
-  display.drawString(128, 54, VERSION);
+  display.drawString(128, 50, VERSION);
   display.display();
   //delay(2000);
 
@@ -657,7 +657,7 @@ void displayHolding(int index) {
   } 
   float priceTrend = isCPThreshReached(index);
   if (priceTrend != 0.0) {
-    alarm(priceTrend, index);
+    triggerAlarm(priceTrend, index);
   }
 }
 
@@ -674,7 +674,7 @@ void LEDup(){
   digitalWrite(GREEN_LED, LOW); 
 }
 
-void alarm(float priceTrend, int index){    
+void triggerAlarm(float priceTrend, int index){    
   display.clear();
   display.setTextAlignment(TEXT_ALIGN_CENTER);
   display.setFont(ArialMT_Plain_24);
