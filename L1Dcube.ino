@@ -11,7 +11,6 @@
 // Standard Libraries - Already Installed if you have ESP8266 set up
 // ----------------------------
 
-#include <WiFiClientSecure.h>
 #include <Wire.h>
 
 // ----------------------------
@@ -139,8 +138,7 @@ Settings settings;                         // <- global settings object
 int currentIndex = -1;
 
 AsyncWebServer server(80);
-WiFiClientSecure clientSSL;
-CoinbaseApi api(clientSSL);
+CoinbaseApi CoinbaseApi;
 DoubleResetDetector drd(DRD_TIMEOUT, DRD_ADDRESS);
 Holding holdings[MAX_HOLDINGS];
 
@@ -402,7 +400,7 @@ void updateFirmware(){
       display.drawXbm(27, 10, MAINLOGO_WIDTH, MAINLOGO_HEIGHT, mainLogo);
       display.setTextAlignment(TEXT_ALIGN_CENTER);
       display.setFont(ArialMT_Plain_10);
-      display.drawString(64, 50, F("No updates"));
+      display.drawString(64, 50, F("No update"));
       display.display();
       Serial.print("Not proceeding to upgrade: ");
       Serial.println(ESPOTAGitHub.getLastError());
@@ -481,6 +479,7 @@ void setup() {
   }
   
   updateFirmware();
+  CoinbaseApi.setCert(&certStore);
 
   // Should load default config if run for the first time
   Serial.println(F("Loading settings..."));
@@ -752,18 +751,18 @@ void updateDate(void) {
 bool loadDataForHolding(int index, unsigned long timeNow) {
   int nextIndex = getNextIndex();
   if (nextIndex > -1 ) {
-    holdings[index].lastTickerResponse = api.GetTickerInfo(holdings[index].tickerId);
+    holdings[index].lastTickerResponse = CoinbaseApi.GetTickerInfo(holdings[index].tickerId);
     // stats reading every 30 s or more
     if (holdings[index].statsReadDue < timeNow) {
-      holdings[index].lastStatsResponse = api.GetStatsInfo(holdings[index].tickerId);
+      holdings[index].lastStatsResponse = CoinbaseApi.GetStatsInfo(holdings[index].tickerId);
       holdings[index].statsReadDue = timeNow + MINUTE_INTERVAL / 2;
     }    
     if (holdings[index].weekAgoPriceReadDue < timeNow) {
-      holdings[index].weekAgoPriceResponse = api.GetCandlesInfo(holdings[index].tickerId, dateWeekAgo);
+      holdings[index].weekAgoPriceResponse = CoinbaseApi.GetCandlesInfo(holdings[index].tickerId, dateWeekAgo);
       holdings[index].weekAgoPriceReadDue = timeNow + HOUR_INTERVAL;
     }
     if (holdings[index].YTDPriceReadDue < timeNow) {
-      holdings[index].YTDPriceResponse = api.GetCandlesInfo(holdings[index].tickerId, currentYear + "-01-01");
+      holdings[index].YTDPriceResponse = CoinbaseApi.GetCandlesInfo(holdings[index].tickerId, currentYear + "-01-01");
       holdings[index].YTDPriceReadDue = timeNow + DAY_INTERVAL / 2;
     }
     if (holdings[index].lastTickerResponse.error != "") {

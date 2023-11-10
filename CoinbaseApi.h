@@ -47,7 +47,8 @@ struct CBPCandlesResponse{
 class CoinbaseApi
 {
   public:
-    CoinbaseApi (WiFiClientSecure &client);
+    CoinbaseApi ();
+    void setCert(BearSSL::CertStore* certStore);
     String SendGetToCoinbase(String command);
     CBPTickerResponse GetTickerInfo(String coinId);
     CBPStatsResponse GetStatsInfo(String coinId);
@@ -58,8 +59,7 @@ class CoinbaseApi
     CBPTickerResponse responseTickerObject;
     CBPStatsResponse responseStatsObject;
     CBPCandlesResponse responseCandlesObject;
-    WiFiClientSecure *client;
-    void closeClient();
+    BearSSL::CertStore* _certStore;
 };
 
 #endif

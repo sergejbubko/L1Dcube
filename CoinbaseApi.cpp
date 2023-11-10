@@ -1,10 +1,13 @@
 #include "CoinbaseApi.h"
 
-CoinbaseApi::CoinbaseApi(WiFiClientSecure &client)  {
-  this->client = &client;
+CoinbaseApi::CoinbaseApi()  {
   responseTickerObject = CBPTickerResponse();
   responseStatsObject = CBPStatsResponse();
   responseCandlesObject = CBPCandlesResponse();
+}
+
+void CoinbaseApi::setCert(BearSSL::CertStore* certStore) {
+  _certStore = certStore;
 }
 
 String CoinbaseApi::SendGetToCoinbase(String command) {
@@ -15,22 +18,23 @@ String CoinbaseApi::SendGetToCoinbase(String command) {
   long now;
   bool avail;
   int i;
-  int j;
-  
-  client->setInsecure();
-  if (client->connect(COINBASE_HOST, Port)) {
+  int j;  
+  BearSSL::WiFiClientSecure client;
+
+  client.setCertStore(_certStore);
+  if (client.connect(COINBASE_HOST, Port)) {
     // Serial.println(".... connected to server");
     char c;
     int ch_count=0;
-    client->println("GET " + command + " HTTP/1.1");
-    client->println("Host: " COINBASE_HOST);
-    client->println(F("User-Agent: arduino/1.0.0"));
-    client->println();
+    client.println("GET " + command + " HTTP/1.1");
+    client.println("Host: " COINBASE_HOST);
+    client.println(F("User-Agent: arduino/1.0.0"));
+    client.println();
     now=millis();
     avail=false;
     while (millis()-now<1500) {
-      while (client->available()) {
-        char c = client->read();
+      while (client.available()) {
+        char c = client.read();
         // Serial.write(c);
 
         if(!finishedHeaders){
@@ -69,8 +73,7 @@ String CoinbaseApi::SendGetToCoinbase(String command) {
         break;
       }   
     }
-  }
-  closeClient();  
+  } 
   return body.substring(i, j+1);
 }
 
@@ -168,10 +171,4 @@ CBPCandlesResponse CoinbaseApi::GetCandlesInfo(String tickerId, String date) {
   responseCandlesObject.error = "";
  
   return responseCandlesObject;
-}
-
-void CoinbaseApi::closeClient() {
-  if(client->connected()){
-    client->stop();
-  }
 }
