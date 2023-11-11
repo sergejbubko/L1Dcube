@@ -125,7 +125,7 @@ struct Settings {
 };
 
 char ssidAP[] = "L1Dcube";  // SSID of the device
-char pwdAP[] = "L1Digital";  // password of the device
+char pwdAP[] = "L1D.com";  // password of the device
 
 unsigned long screenChangeDue = 0;
 unsigned long checkDateTimeInterval = 0;
