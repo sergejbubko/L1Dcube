@@ -62,7 +62,7 @@ BearSSL::CertStore certStore;
 /* Set up values for your repository and binary names */
 #define GHOTA_USER "sergejbubko"
 #define GHOTA_REPO "L1Dcube"
-#define VERSION "v0.1.0" //GHOTA_CURRENT_TAG
+#define VERSION "v0.1.1" //GHOTA_CURRENT_TAG
 #define GHOTA_BIN_FILE "L1Dcube.ino.d1_mini.bin"
 #define GHOTA_ACCEPT_PRERELEASE 0
 
@@ -481,6 +481,14 @@ void setup() {
   }
   
   updateFirmware();
+
+  display.clear();
+  display.setTextAlignment(TEXT_ALIGN_CENTER);
+  display.setFont(ArialMT_Plain_16);
+  display.drawString(64, 4, F("Institutional"));
+  display.drawString(64, 22, F("investing"));
+  display.drawString(64, 40, F("in crypto"));
+  display.display();
 
   // Should load default config if run for the first time
   Serial.println(F("Loading settings..."));
