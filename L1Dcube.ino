@@ -125,7 +125,7 @@ struct Settings {
 };
 
 char ssidAP[] = "L1Dcube";  // SSID of the device
-char pwdAP[] = "L1D.com";  // password of the device
+char pwdAP[] = "toTheMoon";  // password of the device
 
 unsigned long screenChangeDue = 0;
 unsigned long checkDateTimeInterval = 0;
@@ -381,9 +381,9 @@ void updateFirmware(){
   display.setFont(ArialMT_Plain_10);
   display.drawString(64, 50, F("Checking for update..."));
   display.display();
-  Serial.println("Checking for update...");
+  Serial.println(F("Checking for update..."));
     if (ESPOTAGitHub.checkUpgrade()) {
-      Serial.print("Upgrade found at: ");
+      Serial.print(F("Upgrade found at: "));
       Serial.println(ESPOTAGitHub.getUpgradeURL());
       display.clear();
       display.drawXbm(27, 10, MAINLOGO_WIDTH, MAINLOGO_HEIGHT, mainLogo);
@@ -392,9 +392,9 @@ void updateFirmware(){
       display.drawString(64, 50, F("Updating"));
       display.display();
       if (ESPOTAGitHub.doUpgrade()) {
-        Serial.println("Upgrade complete."); //This should never be seen as the device should restart on successful upgrade.
+        Serial.println(F("Upgrade complete.")); //This should never be seen as the device should restart on successful upgrade.
       } else {
-        Serial.print("Unable to upgrade: ");
+        Serial.print(F("Unable to upgrade: "));
         Serial.println(ESPOTAGitHub.getLastError());
       }
     } else {
@@ -406,6 +406,7 @@ void updateFirmware(){
       display.display();
       Serial.print("Not proceeding to upgrade: ");
       Serial.println(ESPOTAGitHub.getLastError());
+      delay(750);
     }
 }
 
@@ -456,6 +457,7 @@ void setup() {
     }
   } else {
     Serial.println(F("No Double Reset Detected"));
+    wm.setDebugOutput(false);
     if (wm.autoConnect(ssidAP, pwdAP)) {
       Serial.println(F("connected...yeey :)"));
     } else {
@@ -489,6 +491,7 @@ void setup() {
   display.drawString(64, 22, F("investing"));
   display.drawString(64, 40, F("in crypto"));
   display.display();
+  delay(2500);
 
   // Should load default config if run for the first time
   Serial.println(F("Loading settings..."));
@@ -582,7 +585,7 @@ void setup() {
   // GMT 0 = 0
   timeClient.setTimeOffset(0);
   
-  delay(2000);
+  delay(1000);
 }
 
 int getNextFreeHoldingIndex() {
