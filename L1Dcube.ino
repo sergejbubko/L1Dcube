@@ -481,6 +481,10 @@ void setup() {
     return;
   }
 
+  // Should load default config if run for the first time
+  Serial.println(F("Loading settings..."));
+  loadSettings(filename, settings);
+  
   if (settings.autoUpdates == "on") {
     int numCerts = certStore.initCertStore(SPIFFS, PSTR("/certs.idx"), PSTR("/certs.ar"));
     Serial.print(F("Number of CA certs read: "));
@@ -500,10 +504,6 @@ void setup() {
   display.drawString(64, 40, F("in crypto"));
   display.display();
   delay(2500);
-
-  // Should load default config if run for the first time
-  Serial.println(F("Loading settings..."));
-  loadSettings(filename, settings);
 
   // Create settings file
   Serial.println(F("Saving settings..."));
