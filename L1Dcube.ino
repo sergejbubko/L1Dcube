@@ -62,7 +62,7 @@ BearSSL::CertStore certStore;
 /* Set up values for your repository and binary names */
 #define GHOTA_USER "sergejbubko"
 #define GHOTA_REPO "L1Dcube"
-#define VERSION "v0.1.1" //GHOTA_CURRENT_TAG
+#define VERSION "v0.1.2" //GHOTA_CURRENT_TAG
 #define GHOTA_BIN_FILE "L1Dcube.ino.d1_mini.bin"
 #define GHOTA_ACCEPT_PRERELEASE 0
 
@@ -122,6 +122,7 @@ struct Settings {
 // We throttle public endpoints by IP: 10 requests per second, up to 15 requests per second in bursts. Some endpoints may have custom rate limits.
   unsigned long screenChangeDelay; // milis
   String pairs[MAX_HOLDINGS];
+  String autoUpdates;
 };
 
 char ssidAP[] = "L1Dcube";  // SSID of the device
@@ -167,13 +168,14 @@ void loadSettings(const char *filename, Settings &settings) {
     settings.pairs[2] = String("null"); 
     settings.pairs[3] = String("null"); 
     settings.pairs[4] = String("null"); 
+    settings.autoUpdates = "on";
     return;
   }
 
   // Allocate a temporary JsonDocument
   // Don't forget to change the capacity to match your requirements.
   // Use www.arduinojson.org/v6/assistant to compute the capacity.
-  StaticJsonDocument<768> doc;
+  StaticJsonDocument<384> doc;
 
   // Deserialize the JSON document
   DeserializationError error = deserializeJson(doc, file);
@@ -194,6 +196,7 @@ void loadSettings(const char *filename, Settings &settings) {
   for (int i = 1; i < MAX_HOLDINGS; i++) {
     settings.pairs[i] = String(doc["pair" + String(i)]);  
   }
+  settings.autoUpdates = doc["autoUpdates"] | "on";
   
 // Close the file
   file.close();
@@ -214,7 +217,7 @@ void saveSettings(const char *filename, const Settings &settings) {
   // Allocate a temporary JsonDocument
   // Don't forget to change the capacity to match your requirements.
   // Use www.arduinojson.org/assistant to compute the capacity.
-  StaticJsonDocument<512> doc;
+  StaticJsonDocument<256> doc;
   
   // Set the values in the document 
   doc["LEDtickThresh"] = settings.LEDtickThresh;
@@ -223,6 +226,7 @@ void saveSettings(const char *filename, const Settings &settings) {
   for (int i = 0; i < MAX_HOLDINGS; i++) {
     doc["pair" + String(i)] = settings.pairs[i];
   } 
+  doc["autoUpdates"] = settings.autoUpdates;
   
   // Serialize JSON to file
   if (serializeJson(doc, file) == 0) {
@@ -335,6 +339,9 @@ String processor(const String& var){
       }
     }
     return result;
+  }
+  if (var == "INPUT_AUTO_UPDATES") {
+    return settings.autoUpdates == "on" ? "checked" : "";
   }
   return String();
 }
@@ -474,15 +481,16 @@ void setup() {
     return;
   }
 
-  int numCerts = certStore.initCertStore(SPIFFS, PSTR("/certs.idx"), PSTR("/certs.ar"));
-  Serial.print(F("Number of CA certs read: "));
-  Serial.println(numCerts);
-  if (numCerts == 0) {
-    Serial.println(F("No certs found. Did you run certs-from-mozill.py and upload the SPIFFS directory before running?"));
-    return; // Can't connect to anything w/o certs!
+  if (settings.autoUpdates == "on") {
+    int numCerts = certStore.initCertStore(SPIFFS, PSTR("/certs.idx"), PSTR("/certs.ar"));
+    Serial.print(F("Number of CA certs read: "));
+    Serial.println(numCerts);
+    if (numCerts == 0) {
+      Serial.println(F("No certs found. Did you run certs-from-mozill.py and upload the SPIFFS directory before running?"));
+    } else {
+      updateFirmware();
+    }  
   }
-  
-  updateFirmware();
 
   display.clear();
   display.setTextAlignment(TEXT_ALIGN_CENTER);
@@ -533,6 +541,7 @@ void setup() {
     // GET inputLEDtickThresh value on <ESP_IP>/get?inputLEDtickThresh=<inputMessage>
     int params = request->params();
     int j = 0;
+    settings.autoUpdates = "off"; // if user uncheck auto updates, otherwise it stays on
     for(int i=0;i<params;i++) {
       AsyncWebParameter* p = request->getParam(i);
       if (p->name() == "inputLEDtickThresh") {
@@ -556,6 +565,8 @@ void setup() {
             saveCheckpointPrice("/" + holdings[i].tickerId + ".txt", holdings[i].priceCheckpoint);
           }
         }
+      } else if (p->name() == "inputAutoUpdates") {
+        settings.autoUpdates = "on";
       }
     }
     // reset other values

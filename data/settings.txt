@@ -1,10 +1,11 @@
 {
   "LEDtickThresh": 0.01,
   "CPThresh": 5,
-  "screenChangeDelay" : 5000,
-  "pair0" : "BTC-USD",
-  "pair1" : "null",  
-  "pair2" : "null",  
-  "pair3" : "null",  
-  "pair4" : "null"
+  "screenChangeDelay": 5000,
+  "pair0": "BTC-USD",
+  "pair1": "null",
+  "pair2": "null",
+  "pair3": "null",
+  "pair4": "null",
+  "autoUpdates": "on"
 }
