@@ -43,7 +43,7 @@ void CoinbaseApi::SendGetToCoinbase(char *command, char *json) {
             finishedHeaders = true;
           }
         } else {
-          body=body+c;
+          body[ch_count]=c;
           ch_count++;
         }
 
@@ -64,13 +64,13 @@ void CoinbaseApi::SendGetToCoinbase(char *command, char *json) {
     }
     // search for left curly braces or square brackets
     for (i = 0; i < ch_count; i++) {
-      if (body.charAt(i) == '{' || body.charAt(i) == '[') {
+      if (body[i] == '{' || body[i] == '[') {
         break;
       }
     }
     // search for right curly braces or square brackets
     for (j = ch_count; j > i; j--) {
-      if (body.charAt(j) == '}' || body.charAt(j) == ']') {
+      if (body[j] == '}' || body[j] == ']') {
         break;
       }   
     }

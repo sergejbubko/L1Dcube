@@ -99,6 +99,8 @@ BearSSL::CertStore certStore;
 #define HOUR_INTERVAL 3600000
 #define DAY_INTERVAL 86400000
 
+#define SETTINGS_FILE "/settings.txt"
+
 struct Holding {
   String tickerId;
   float newPrice;
@@ -774,14 +776,14 @@ void updateDate(void) {
 bool loadDataForHolding(int index, unsigned long timeNow) {
   int nextIndex = getNextIndex();
   if (nextIndex > -1 ) {
-    holdings[index].lastTickerResponse = api.GetTickerInfo(holdings[index].tickerId);
+    holdings[index].lastTickerResponse = api.GetTickerInfo(holdings[index].tickerId.c_str());
     // stats reading every 30 s or more
     if (holdings[index].statsReadDue < timeNow) {
-      holdings[index].lastStatsResponse = api.GetStatsInfo(holdings[index].tickerId);
+      holdings[index].lastStatsResponse = api.GetStatsInfo(holdings[index].tickerId.c_str());
       holdings[index].statsReadDue = timeNow + MINUTE_INTERVAL / 2;
     }    
     if (holdings[index].weekAgoPriceReadDue < timeNow) {
-      holdings[index].weekAgoPriceResponse = api.GetCandlesInfo(holdings[index].tickerId, dateWeekAgo);
+      holdings[index].weekAgoPriceResponse = api.GetCandlesInfo(holdings[index].tickerId.c_str(), dateWeekAgo.c_str());
       holdings[index].weekAgoPriceReadDue = timeNow + HOUR_INTERVAL;
     }
     if (holdings[index].YTDPriceReadDue < timeNow) {
@@ -789,16 +791,20 @@ bool loadDataForHolding(int index, unsigned long timeNow) {
       holdings[index].YTDPriceReadDue = timeNow + DAY_INTERVAL / 2;
     }
     if (holdings[index].lastTickerResponse.error != "") {
-      Serial.println("ERR: holdings[index].lastTickerResponse: " + String(holdings[index].lastTickerResponse.error));
+      Serial.print("ERR: holdings[index].lastTickerResponse: ");
+      Serial.println(holdings[index].lastTickerResponse.error);
     }
     if (holdings[index].lastStatsResponse.error != "") {
-      Serial.println("ERR: holdings[index].lastStatsResponse: " + String(holdings[index].lastStatsResponse.error));
+      Serial.print("ERR: holdings[index].lastStatsResponse: ");
+      Serial.println(holdings[index].lastStatsResponse.error);
     }
     if (holdings[index].weekAgoPriceResponse.error != "") {
-      Serial.println("ERR: holdings[index].weekAgoPriceResponse: " + String(holdings[index].weekAgoPriceResponse.error));
+      Serial.print("ERR: holdings[index].weekAgoPriceResponse: ");
+      Serial.println(holdings[index].weekAgoPriceResponse.error);
     }
     if (holdings[index].YTDPriceResponse.error != "") {
-      Serial.println("ERR: holdings[index].YTDPriceResponse: " + String(holdings[index].YTDPriceResponse.error));
+      Serial.print("ERR: holdings[index].YTDPriceResponse: ");
+      Serial.println(holdings[index].YTDPriceResponse.error);
     }
     return (holdings[index].lastTickerResponse.error == "" && holdings[index].lastStatsResponse.error == "" 
     && holdings[index].weekAgoPriceResponse.error == "" && holdings[index].YTDPriceResponse.error == "");
