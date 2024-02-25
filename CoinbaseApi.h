@@ -48,10 +48,10 @@ class CoinbaseApi
 {
   public:
     CoinbaseApi (WiFiClientSecure &client);
-    String SendGetToCoinbase(String command);
-    CBPTickerResponse GetTickerInfo(String coinId);
-    CBPStatsResponse GetStatsInfo(String coinId);
-    CBPCandlesResponse GetCandlesInfo(String tickerId, String date);
+    void SendGetToCoinbase(char *command, char *json);
+    CBPTickerResponse GetTickerInfo(const char *tickerId);
+    CBPStatsResponse GetStatsInfo(const char *tickerId);
+    CBPCandlesResponse GetCandlesInfo(const char *tickerId, const char *date);
     int Port = 443;
 
   private:

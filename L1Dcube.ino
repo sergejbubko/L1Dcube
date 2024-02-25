@@ -579,7 +579,7 @@ void setup() {
     
     // Dump config file
     Serial.println(F("Print config file..."));
-    printFile(filename);
+    printFile(SETTINGS_FILE);
     
     request->send(200);
     ESP.restart();
@@ -785,7 +785,7 @@ bool loadDataForHolding(int index, unsigned long timeNow) {
       holdings[index].weekAgoPriceReadDue = timeNow + HOUR_INTERVAL;
     }
     if (holdings[index].YTDPriceReadDue < timeNow) {
-      holdings[index].YTDPriceResponse = api.GetCandlesInfo(holdings[index].tickerId, currentYear + "-01-01");
+      holdings[index].YTDPriceResponse = api.GetCandlesInfo(holdings[index].tickerId.c_str(), String(currentYear + "-01-01").c_str());
       holdings[index].YTDPriceReadDue = timeNow + DAY_INTERVAL / 2;
     }
     if (holdings[index].lastTickerResponse.error != "") {
