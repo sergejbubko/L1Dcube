@@ -100,22 +100,24 @@ void CoinbaseApi::SendGetToCoinbase(char *command, char *json) {
 }
 
 CBPTickerResponse CoinbaseApi::GetTickerInfo(const char *tickerId) {
-  
+  size_t inputLength = 700;
   // https://api.exchange.coinbase.com/products/btc-eur/ticker  
   // 17 letters + ticker 5 + 1 + 5 + zero
   char commandTicker[29] = "/products/";
-  char responseTicker[700] = "";
+  char responseTicker[inputLength] = "";
   strcat(commandTicker, tickerId);
   strcat(commandTicker, "/ticker");
   SendGetToCoinbase(commandTicker, responseTicker);
   // Serial.print(tickerId); 
   // Serial.print(F(" ticker: "));
   // Serial.println(responseTicker);
-  
-  StaticJsonDocument<192> ticker;
+  StaticJsonDocument<16> filter;
+  filter["price"] = true;
+
+  StaticJsonDocument<48> ticker;
   
   // Deserialize the JSON document
-  DeserializationError errorTicker = deserializeJson(ticker, responseTicker);
+  DeserializationError errorTicker = deserializeJson(ticker, responseTicker, inputLength, DeserializationOption::Filter(filter));
   
   // Test if parsing succeeds.
   if (errorTicker) {
@@ -134,22 +136,27 @@ CBPTickerResponse CoinbaseApi::GetTickerInfo(const char *tickerId) {
 }
 
 CBPStatsResponse CoinbaseApi::GetStatsInfo(const char *tickerId) {
-
+  size_t inputLength = 700;
   // https://api.exchange.coinbase.com/products/btc-eur/stats
   // 16 letters + ticker 5 + 1 + 5 + zero
   char commandStats[28] = "/products/";
-  char responseStats[700] = "";
+  char responseStats[inputLength] = "";
   strcat(commandStats, tickerId);
   strcat(commandStats, "/stats");
   SendGetToCoinbase(commandStats, responseStats);
   // Serial.print(tickerId);
   // Serial.print(" stats: ");
   // Serial.println(responseStats);
+
+  StaticJsonDocument<48> filter;
+  filter["open"] = true;
+  filter["high"] = true;
+  filter["low"] = true;
   
-  StaticJsonDocument<192> stats;
+  StaticJsonDocument<96> stats;
   
   // Deserialize the JSON document
-  DeserializationError errorStats = deserializeJson(stats, responseStats);
+  DeserializationError errorStats = deserializeJson(stats, responseStats, inputLength, DeserializationOption::Filter(filter));
 
   // Test if parsing succeeds.
   if (errorStats) {
@@ -186,7 +193,7 @@ CBPCandlesResponse CoinbaseApi::GetCandlesInfo(const char *tickerId, const char 
   // Serial.print(F(": "));
   // Serial.println(responseCandles);
 
-  StaticJsonDocument<256> candles;
+  StaticJsonDocument<128> candles;
 
   // Deserialize the JSON document
   DeserializationError errorCandles = deserializeJson(candles, responseCandles);  

@@ -62,7 +62,7 @@ BearSSL::CertStore certStore;
 /* Set up values for your repository and binary names */
 #define GHOTA_USER "sergejbubko"
 #define GHOTA_REPO "L1Dcube"
-#define VERSION "v0.1.2" //GHOTA_CURRENT_TAG
+#define VERSION "v0.1.3" //GHOTA_CURRENT_TAG
 #define GHOTA_BIN_FILE "L1Dcube.ino.d1_mini.bin"
 #define GHOTA_ACCEPT_PRERELEASE 0
 
