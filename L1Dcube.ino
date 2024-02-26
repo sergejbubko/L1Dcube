@@ -137,7 +137,6 @@ int dataNotLoadedCounter = 0;
 
 String dateWeekAgo = "";
 String currentYear = "";
-const char *filename = "/settings.txt";
 Settings settings;                         // <- global settings object
 int currentIndex = -1;
 
@@ -154,9 +153,9 @@ WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org");
 
 // Loads the settings from a file
-void loadSettings(const char *filename, Settings &settings) {
+void loadSettings(Settings &settings) {
   // Open file for reading
-  File file = SPIFFS.open(filename, "r");
+  File file = SPIFFS.open(SETTINGS_FILE, "r");
   if (!file) {
     Serial.println(F("ERR: Failed to read file, using default values"));
     settings.LEDtickThresh = 0.01;
@@ -205,12 +204,12 @@ void loadSettings(const char *filename, Settings &settings) {
 }
 
 // Saves the settings to a file
-void saveSettings(const char *filename, const Settings &settings) {
+void saveSettings(const Settings &settings) {
   // Delete existing file, otherwise the settings is appended to the file
-  SPIFFS.remove(filename);
+  SPIFFS.remove(SETTINGS_FILE);
 
   // Open file for writing
-  File file = SPIFFS.open(filename, "w");
+  File file = SPIFFS.open(SETTINGS_FILE, "w");
   if (!file) {
     Serial.println(F("ERR: Failed to create file"));
     return;
@@ -470,8 +469,7 @@ void setup() {
     if (wm.autoConnect(ssidAP, pwdAP)) {
       Serial.println(F("connected...yeey :)"));
     } else {
-      displayMessage(F("Connection error. No AP set. Will restart in 10 secs. " 
-      "Follow instructions on screen and set network credentials."));
+      displayMessage("Connection error. No AP set. Will restart in 10 secs. Follow instructions on screen and set network credentials.");
       delay(10000);
       ESP.restart();
     }
@@ -485,7 +483,7 @@ void setup() {
 
   // Should load default config if run for the first time
   Serial.println(F("Loading settings..."));
-  loadSettings(filename, settings);
+  loadSettings(settings);
   
   if (settings.autoUpdates == "on") {
     int numCerts = certStore.initCertStore(SPIFFS, PSTR("/certs.idx"), PSTR("/certs.ar"));
@@ -509,11 +507,11 @@ void setup() {
 
   // Create settings file
   Serial.println(F("Saving settings..."));
-  saveSettings(filename, settings);
+  saveSettings(settings);
 
   // Dump config file
   Serial.println(F("Print config file..."));
-  printFile(filename);
+  printFile(SETTINGS_FILE);
 
   for (int i = 0; i < MAX_HOLDINGS; i++) {
     if (settings.pairs[i] != "null") {
@@ -577,7 +575,7 @@ void setup() {
       j++;
     }
     Serial.println(F("Saving configuration..."));
-    saveSettings(filename, settings);
+    saveSettings(settings);
     
     // Dump config file
     Serial.println(F("Print config file..."));
@@ -734,7 +732,7 @@ float isCPThreshReached (int index) {
   return result;
 }
 
-void displayMessage(const String& message){
+void displayMessage(const char *message){
   display.clear();
   display.setFont(ArialMT_Plain_10);
   display.setTextAlignment(TEXT_ALIGN_LEFT);
@@ -840,13 +838,13 @@ void loop() {
         Serial.println(dataNotLoadedCounter);
       }
       if (dataNotLoadedCounter > 5) {
-        displayMessage(F("Error loading data. Check wifi connection or increase screen change delay in config."));
+        displayMessage("Error loading data. Check wifi connection or increase screen change delay in config.");
       }
       if (dataNotLoadedCounter > 20) {
         ESP.restart();
       }
     } else {
-      displayMessage(F("No funds to display. Edit the setup to add them"));
+      displayMessage("No funds to display. Edit the setup to add them");
     }
     screenChangeDue = timeNow + settings.screenChangeDelay;
   }
