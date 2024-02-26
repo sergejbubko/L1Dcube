@@ -7,9 +7,11 @@ CoinbaseApi::CoinbaseApi(WiFiClientSecure &client)  {
   responseCandlesObject = CBPCandlesResponse();
 }
 
-String CoinbaseApi::SendGetToCoinbase(String command) {
-  String body="";
-  body.reserve(700);
+void CoinbaseApi::SendGetToCoinbase(char *command, char *json) {
+//  Serial.print("json str start: ");
+//  Serial.println(json);
+  char body[500];
+  // body.reserve(700);
   bool finishedHeaders = false;
   bool currentLineIsBlank = true;
   long now;
@@ -22,9 +24,12 @@ String CoinbaseApi::SendGetToCoinbase(String command) {
     // Serial.println(".... connected to server");
     char c;
     int ch_count=0;
-    client->println("GET " + command + " HTTP/1.1");
-    client->println("Host: " COINBASE_HOST);
-    client->println(F("User-Agent: arduino/1.0.0"));
+    client->print("GET ");
+    client->print(command);
+    client->println(" HTTP/1.1");
+    client->print("Host: ");
+    client->println(COINBASE_HOST);
+    client->println("User-Agent: arduino/1.0.0");
     client->println();
     now=millis();
     avail=false;
@@ -38,7 +43,7 @@ String CoinbaseApi::SendGetToCoinbase(String command) {
             finishedHeaders = true;
           }
         } else {
-          body=body+c;
+          body[ch_count]=c;
           ch_count++;
         }
 
@@ -59,35 +64,60 @@ String CoinbaseApi::SendGetToCoinbase(String command) {
     }
     // search for left curly braces or square brackets
     for (i = 0; i < ch_count; i++) {
-      if (body.charAt(i) == '{' || body.charAt(i) == '[') {
+      if (body[i] == '{' || body[i] == '[') {
         break;
       }
     }
     // search for right curly braces or square brackets
     for (j = ch_count; j > i; j--) {
-      if (body.charAt(j) == '}' || body.charAt(j) == ']') {
+      if (body[j] == '}' || body[j] == ']') {
         break;
       }   
     }
+//    Serial.print("len ");
+//    Serial.print(ch_count);
   }
   closeClient();  
-  return body.substring(i, j+1);
+  // # TODO
+  // We can also use strncpy() function in C to copy the substring from a given input string. 
+  // It takes 3 parameters which are the destination string, source string along with starting
+  // index and length of the substring which we need to copy.
+  // Syntax:
+  // strncpy(destination_string,input_string+pos,len);
+  // char str[30] = "  {[abcdefgh]}    rgnhsha"
+  // i is starting index, j is ending index => len = j - i + 1
+  strncpy(json, body+i, j-i+1);
+  //memcpy( json, &body[i], j-i+1 );
+  json[j-i+1] = '\0';
+//  Serial.print(", i ");
+//  Serial.print(i);  
+//  Serial.print(", j ");
+//  Serial.print(j);
+//  Serial.print(", json: ");
+//  Serial.println(json);
+//  Serial.print(", body: ");
+//  Serial.println(body);
 }
 
-CBPTickerResponse CoinbaseApi::GetTickerInfo(String tickerId) {
-  
+CBPTickerResponse CoinbaseApi::GetTickerInfo(const char *tickerId) {
+  size_t inputLength = 700;
   // https://api.exchange.coinbase.com/products/btc-eur/ticker  
-  String commandTicker="/products/" + tickerId + "/ticker";
-  
-  String responseTicker = SendGetToCoinbase(commandTicker);
+  // 17 letters + ticker 5 + 1 + 5 + zero
+  char commandTicker[29] = "/products/";
+  char responseTicker[inputLength] = "";
+  strcat(commandTicker, tickerId);
+  strcat(commandTicker, "/ticker");
+  SendGetToCoinbase(commandTicker, responseTicker);
   // Serial.print(tickerId); 
   // Serial.print(F(" ticker: "));
   // Serial.println(responseTicker);
-  
-  StaticJsonDocument<256> ticker;
+  StaticJsonDocument<16> filter;
+  filter["price"] = true;
+
+  StaticJsonDocument<48> ticker;
   
   // Deserialize the JSON document
-  DeserializationError errorTicker = deserializeJson(ticker, responseTicker);
+  DeserializationError errorTicker = deserializeJson(ticker, responseTicker, inputLength, DeserializationOption::Filter(filter));
   
   // Test if parsing succeeds.
   if (errorTicker) {
@@ -105,20 +135,28 @@ CBPTickerResponse CoinbaseApi::GetTickerInfo(String tickerId) {
   return responseTickerObject;
 }
 
-CBPStatsResponse CoinbaseApi::GetStatsInfo(String tickerId) {
-
+CBPStatsResponse CoinbaseApi::GetStatsInfo(const char *tickerId) {
+  size_t inputLength = 700;
   // https://api.exchange.coinbase.com/products/btc-eur/stats
-  String commandStats="/products/" + tickerId + "/stats";
-  
-  String responseStats = SendGetToCoinbase(commandStats);
+  // 16 letters + ticker 5 + 1 + 5 + zero
+  char commandStats[28] = "/products/";
+  char responseStats[inputLength] = "";
+  strcat(commandStats, tickerId);
+  strcat(commandStats, "/stats");
+  SendGetToCoinbase(commandStats, responseStats);
   // Serial.print(tickerId);
   // Serial.print(" stats: ");
   // Serial.println(responseStats);
+
+  StaticJsonDocument<48> filter;
+  filter["open"] = true;
+  filter["high"] = true;
+  filter["low"] = true;
   
-  StaticJsonDocument<256> stats;
+  StaticJsonDocument<96> stats;
   
   // Deserialize the JSON document
-  DeserializationError errorStats = deserializeJson(stats, responseStats);
+  DeserializationError errorStats = deserializeJson(stats, responseStats, inputLength, DeserializationOption::Filter(filter));
 
   // Test if parsing succeeds.
   if (errorStats) {
@@ -138,18 +176,24 @@ CBPStatsResponse CoinbaseApi::GetStatsInfo(String tickerId) {
   return responseStatsObject;
 }
 
-CBPCandlesResponse CoinbaseApi::GetCandlesInfo(String tickerId, String date) {
+CBPCandlesResponse CoinbaseApi::GetCandlesInfo(const char *tickerId, const char *date) {
   // https://api.exchange.coinbase.com/products/btc-eur/candles?granularity=86400&start=2021-01-01&end=2021-01-01
-  String commandCandles="/products/" + tickerId + "/candles?granularity=86400&start=" + date + "&end=" + date;
-  
-  String responseCandles = SendGetToCoinbase(commandCandles);
+  // 48 letters + ticker 5 + 1 + 5 + 2*date + zero 
+  char commandCandles[96] = "/products/";
+  char responseCandles[700] = "";
+  strcat(commandCandles, tickerId);
+  strcat(commandCandles, "/candles?granularity=86400&start=");
+  strcat(commandCandles, date);
+  strcat(commandCandles, "&end=");
+  strcat(commandCandles, date);
+  SendGetToCoinbase(commandCandles, responseCandles);
   // Serial.print(tickerId);
   // Serial.print(F(" candles "));
   // Serial.print(date);
   // Serial.print(F(": "));
   // Serial.println(responseCandles);
 
-  StaticJsonDocument<256> candles;
+  StaticJsonDocument<128> candles;
 
   // Deserialize the JSON document
   DeserializationError errorCandles = deserializeJson(candles, responseCandles);  

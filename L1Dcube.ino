@@ -62,7 +62,7 @@ BearSSL::CertStore certStore;
 /* Set up values for your repository and binary names */
 #define GHOTA_USER "sergejbubko"
 #define GHOTA_REPO "L1Dcube"
-#define VERSION "v0.1.2" //GHOTA_CURRENT_TAG
+#define VERSION "v0.1.3" //GHOTA_CURRENT_TAG
 #define GHOTA_BIN_FILE "L1Dcube.ino.d1_mini.bin"
 #define GHOTA_ACCEPT_PRERELEASE 0
 
@@ -98,6 +98,8 @@ BearSSL::CertStore certStore;
 #define MINUTE_INTERVAL 60000
 #define HOUR_INTERVAL 3600000
 #define DAY_INTERVAL 86400000
+
+#define SETTINGS_FILE "/settings.txt"
 
 struct Holding {
   String tickerId;
@@ -135,7 +137,6 @@ int dataNotLoadedCounter = 0;
 
 String dateWeekAgo = "";
 String currentYear = "";
-const char *filename = "/settings.txt";
 Settings settings;                         // <- global settings object
 int currentIndex = -1;
 
@@ -152,9 +153,9 @@ WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org");
 
 // Loads the settings from a file
-void loadSettings(const char *filename, Settings &settings) {
+void loadSettings(Settings &settings) {
   // Open file for reading
-  File file = SPIFFS.open(filename, "r");
+  File file = SPIFFS.open(SETTINGS_FILE, "r");
   if (!file) {
     Serial.println(F("ERR: Failed to read file, using default values"));
     settings.LEDtickThresh = 0.01;
@@ -203,12 +204,12 @@ void loadSettings(const char *filename, Settings &settings) {
 }
 
 // Saves the settings to a file
-void saveSettings(const char *filename, const Settings &settings) {
+void saveSettings(const Settings &settings) {
   // Delete existing file, otherwise the settings is appended to the file
-  SPIFFS.remove(filename);
+  SPIFFS.remove(SETTINGS_FILE);
 
   // Open file for writing
-  File file = SPIFFS.open(filename, "w");
+  File file = SPIFFS.open(SETTINGS_FILE, "w");
   if (!file) {
     Serial.println(F("ERR: Failed to create file"));
     return;
@@ -468,8 +469,7 @@ void setup() {
     if (wm.autoConnect(ssidAP, pwdAP)) {
       Serial.println(F("connected...yeey :)"));
     } else {
-      displayMessage(F("Connection error. No AP set. Will restart in 10 secs. " 
-      "Follow instructions on screen and set network credentials."));
+      displayMessage("Connection error. No AP set. Will restart in 10 secs. Follow instructions on screen and set network credentials.");
       delay(10000);
       ESP.restart();
     }
@@ -483,7 +483,7 @@ void setup() {
 
   // Should load default config if run for the first time
   Serial.println(F("Loading settings..."));
-  loadSettings(filename, settings);
+  loadSettings(settings);
   
   if (settings.autoUpdates == "on") {
     int numCerts = certStore.initCertStore(SPIFFS, PSTR("/certs.idx"), PSTR("/certs.ar"));
@@ -507,11 +507,11 @@ void setup() {
 
   // Create settings file
   Serial.println(F("Saving settings..."));
-  saveSettings(filename, settings);
+  saveSettings(settings);
 
   // Dump config file
   Serial.println(F("Print config file..."));
-  printFile(filename);
+  printFile(SETTINGS_FILE);
 
   for (int i = 0; i < MAX_HOLDINGS; i++) {
     if (settings.pairs[i] != "null") {
@@ -575,11 +575,11 @@ void setup() {
       j++;
     }
     Serial.println(F("Saving configuration..."));
-    saveSettings(filename, settings);
+    saveSettings(settings);
     
     // Dump config file
     Serial.println(F("Print config file..."));
-    printFile(filename);
+    printFile(SETTINGS_FILE);
     
     request->send(200);
     ESP.restart();
@@ -732,7 +732,7 @@ float isCPThreshReached (int index) {
   return result;
 }
 
-void displayMessage(const String& message){
+void displayMessage(const char *message){
   display.clear();
   display.setFont(ArialMT_Plain_10);
   display.setTextAlignment(TEXT_ALIGN_LEFT);
@@ -774,31 +774,35 @@ void updateDate(void) {
 bool loadDataForHolding(int index, unsigned long timeNow) {
   int nextIndex = getNextIndex();
   if (nextIndex > -1 ) {
-    holdings[index].lastTickerResponse = api.GetTickerInfo(holdings[index].tickerId);
+    holdings[index].lastTickerResponse = api.GetTickerInfo(holdings[index].tickerId.c_str());
     // stats reading every 30 s or more
     if (holdings[index].statsReadDue < timeNow) {
-      holdings[index].lastStatsResponse = api.GetStatsInfo(holdings[index].tickerId);
+      holdings[index].lastStatsResponse = api.GetStatsInfo(holdings[index].tickerId.c_str());
       holdings[index].statsReadDue = timeNow + MINUTE_INTERVAL / 2;
     }    
     if (holdings[index].weekAgoPriceReadDue < timeNow) {
-      holdings[index].weekAgoPriceResponse = api.GetCandlesInfo(holdings[index].tickerId, dateWeekAgo);
+      holdings[index].weekAgoPriceResponse = api.GetCandlesInfo(holdings[index].tickerId.c_str(), dateWeekAgo.c_str());
       holdings[index].weekAgoPriceReadDue = timeNow + HOUR_INTERVAL;
     }
     if (holdings[index].YTDPriceReadDue < timeNow) {
-      holdings[index].YTDPriceResponse = api.GetCandlesInfo(holdings[index].tickerId, currentYear + "-01-01");
+      holdings[index].YTDPriceResponse = api.GetCandlesInfo(holdings[index].tickerId.c_str(), String(currentYear + "-01-01").c_str());
       holdings[index].YTDPriceReadDue = timeNow + DAY_INTERVAL / 2;
     }
     if (holdings[index].lastTickerResponse.error != "") {
-      Serial.println("ERR: holdings[index].lastTickerResponse: " + String(holdings[index].lastTickerResponse.error));
+      Serial.print("ERR: holdings[index].lastTickerResponse: ");
+      Serial.println(holdings[index].lastTickerResponse.error);
     }
     if (holdings[index].lastStatsResponse.error != "") {
-      Serial.println("ERR: holdings[index].lastStatsResponse: " + String(holdings[index].lastStatsResponse.error));
+      Serial.print("ERR: holdings[index].lastStatsResponse: ");
+      Serial.println(holdings[index].lastStatsResponse.error);
     }
     if (holdings[index].weekAgoPriceResponse.error != "") {
-      Serial.println("ERR: holdings[index].weekAgoPriceResponse: " + String(holdings[index].weekAgoPriceResponse.error));
+      Serial.print("ERR: holdings[index].weekAgoPriceResponse: ");
+      Serial.println(holdings[index].weekAgoPriceResponse.error);
     }
     if (holdings[index].YTDPriceResponse.error != "") {
-      Serial.println("ERR: holdings[index].YTDPriceResponse: " + String(holdings[index].YTDPriceResponse.error));
+      Serial.print("ERR: holdings[index].YTDPriceResponse: ");
+      Serial.println(holdings[index].YTDPriceResponse.error);
     }
     return (holdings[index].lastTickerResponse.error == "" && holdings[index].lastStatsResponse.error == "" 
     && holdings[index].weekAgoPriceResponse.error == "" && holdings[index].YTDPriceResponse.error == "");
@@ -834,13 +838,13 @@ void loop() {
         Serial.println(dataNotLoadedCounter);
       }
       if (dataNotLoadedCounter > 5) {
-        displayMessage(F("Error loading data. Check wifi connection or increase screen change delay in config."));
+        displayMessage("Error loading data. Check wifi connection or increase screen change delay in config.");
       }
       if (dataNotLoadedCounter > 20) {
         ESP.restart();
       }
     } else {
-      displayMessage(F("No funds to display. Edit the setup to add them"));
+      displayMessage("No funds to display. Edit the setup to add them");
     }
     screenChangeDue = timeNow + settings.screenChangeDelay;
   }
