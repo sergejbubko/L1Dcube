@@ -29,7 +29,8 @@ void CoinbaseApi::SendGetToCoinbase(char *command, char *json) {
     client->println(" HTTP/1.1");
     client->print("Host: ");
     client->println(COINBASE_HOST);
-    client->println("User-Agent: arduino/1.0.0");
+    client->println("User-Agent: wemosD1mini/3.1.0");
+    client->println("Connection: close");
     client->println();
     now=millis();
     avail=false;

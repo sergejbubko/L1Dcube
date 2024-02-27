@@ -64,9 +64,9 @@ BearSSL::CertStore certStore;
 #define GHOTA_REPO "L1Dcube"
 #define VERSION "v0.1.3" //GHOTA_CURRENT_TAG
 #define GHOTA_BIN_FILE "L1Dcube.ino.d1_mini.bin"
-#define GHOTA_ACCEPT_PRERELEASE 0
 
-//https://github.com/yknivag/ESP_OTA_GitHub
+//original https://github.com/yknivag/ESP_OTA_GitHub
+//this project uses my fork https://github.com/sergejbubko/ESP_OTA_GitHub
 #include <ESP_OTA_GitHub.h>
 
 // Pins based on your wiring
@@ -382,7 +382,7 @@ void configModeCallback (WiFiManager *myWiFiManager) {
 void updateFirmware(){
   // Initialise Update Code
   //We do this locally so that the memory used is freed when the function exists.
-  ESPOTAGitHub ESPOTAGitHub(&certStore, GHOTA_USER, GHOTA_REPO, VERSION, GHOTA_BIN_FILE, GHOTA_ACCEPT_PRERELEASE, 4096);
+  ESPOTAGitHub ESPOTAGitHub(&certStore, GHOTA_USER, GHOTA_REPO, VERSION, GHOTA_BIN_FILE);
   display.clear();
   display.drawXbm(27, 10, MAINLOGO_WIDTH, MAINLOGO_HEIGHT, mainLogo);
   display.setTextAlignment(TEXT_ALIGN_CENTER);
